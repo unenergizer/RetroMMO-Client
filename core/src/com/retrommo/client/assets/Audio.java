@@ -1,11 +1,11 @@
-package com.retrommo.client.managers;
+package com.retrommo.client.assets;
 
 /*********************************************************************************
  *
  * OWNER: Robert Andrew Brown & Joseph Rugh
  * PROGRAMMER: Robert Andrew Brown & Joseph Rugh
  * PROJECT: RetroMMO-Client
- * DATE: 3/28/2017
+ * DATE: 4/1/2017
  * _______________________________________________________________________________
  *
  * Copyright © 2017 RetroMMO.com. All Rights Reserved.
@@ -17,6 +17,5 @@ package com.retrommo.client.managers;
  */
 
 
-public class GameManager {
-
+public class Audio {
 }

@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -25,7 +24,7 @@ import lombok.Getter;
  * without the prior written permission of the owner.
  */
 
-public class ListenerManager {
+public class NetworkListenerManager {
 
     private final Map<EventMethodPair, com.retrommo.client.netty.ObjectListener> listeners = new HashMap<>();
 
@@ -44,16 +43,11 @@ public class ListenerManager {
 
             Class<?>[] params = method.getParameterTypes();
 
-            if (params.length > 2)
+            if (params.length > 1)
                 throw new RuntimeException("Cannot contain more than one parameter in: " + listener);
-            if (params.length < 2)
-                throw new RuntimeException("Must have two parameter for: " + listener);
 
             if (!eventTypes[0].getType().equals(params[0]))
                 throw new RuntimeException("Annotation to parameter mismatch.");
-
-            if (!(params[1].equals(ChannelHandlerContext.class)))
-                throw new RuntimeException("The second parameter must be of type: " + ChannelHandlerContext.class);
 
             listeners.put(new EventMethodPair(eventTypes[0], method), listener);
         }
@@ -62,7 +56,7 @@ public class ListenerManager {
             throw new RuntimeException("Failed to find annotation for: " + listener);
     }
 
-    public void runListeners(Object object, ChannelHandlerContext ctx) {
+    public void runListeners(Object object) {
 
         boolean packetFound = false;
 
@@ -71,7 +65,7 @@ public class ListenerManager {
                 packetFound = true;
                 try {
                     System.out.println(object.getClass().getName());
-                    it.getMethod().invoke(listeners.get(it), object, ctx);
+                    it.getMethod().invoke(listeners.get(it), object);
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     e.printStackTrace();
                 }

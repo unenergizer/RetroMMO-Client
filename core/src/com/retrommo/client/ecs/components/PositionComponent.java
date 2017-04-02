@@ -1,9 +1,12 @@
 package com.retrommo.client.ecs.components;
 
-import com.badlogic.ashley.core.Component;
+import com.artemis.Component;
 
-public class PositionComponent implements Component {
+import lombok.Getter;
+import lombok.Setter;
 
-    public float x;
-    public float y;
+@Getter
+@Setter
+public class PositionComponent extends Component {
+    private float x, y;
 }

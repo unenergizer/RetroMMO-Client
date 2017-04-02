@@ -1,18 +1,21 @@
 package com.retrommo.client.netty.listeners;
 
 import com.retrommo.client.RetroMMO;
+import com.retrommo.client.assets.Assets;
 import com.retrommo.client.netty.ObjectListener;
 import com.retrommo.client.netty.ObjectType;
-import com.retrommo.iocommon.wire.global.ChatMessage;
+import com.retrommo.iocommon.wire.server.SendEntityData;
 
 import lombok.AllArgsConstructor;
+
+import static com.retrommo.iocommon.enums.EntityTypes.PLAYER;
 
 /*********************************************************************************
  *
  * OWNER: Robert Andrew Brown & Joseph Rugh
  * PROGRAMMER: Robert Andrew Brown & Joseph Rugh
  * PROJECT: RetroMMO-Client
- * DATE: 3/26/2017
+ * DATE: 3/28/2017
  * _______________________________________________________________________________
  *
  * Copyright © 2017 RetroMMO.com. All Rights Reserved.
@@ -23,15 +26,29 @@ import lombok.AllArgsConstructor;
  * without the prior written permission of the owner.
  */
 @AllArgsConstructor
-public class ChatListener implements ObjectListener {
+public class EntityReceivedListener implements ObjectListener {
 
     private RetroMMO retroMMO;
 
-    @ObjectType(getType = ChatMessage.class)
-    public void onChatReceived(ChatMessage chatMessage) {
+    @ObjectType(getType = SendEntityData.class)
+    public void onEntityReceived(SendEntityData sendEntityData) {
 
-        if (retroMMO.getGameScreen() != null) {
-            retroMMO.getGameScreen().getChatBox().getChatArea().appendText(chatMessage.getMessage());
+        //TODO: READ FROM JSON FILE AND PROPERLY CREATE ENTITIES
+
+        String imagePath = "";
+
+        switch (sendEntityData.getEntityType()) {
+            case PLAYER:
+                imagePath = Assets.graphics.TEMP_PLAYER_IMG; //TODO: REMOVE
+                break;
         }
+
+        //TODO: REMOVE
+        retroMMO.getGameScreen().getEntityFactory().makeEntity(
+                sendEntityData.getX(),
+                sendEntityData.getY(),
+                25,//width
+                25,//height
+                imagePath, sendEntityData.getServerEntityId());
     }
 }

@@ -22,15 +22,15 @@ import com.retrommo.client.RetroMMO;
  * without the prior written permission of the owner.
  */
 
-public abstract class AbstractMenu extends Table {
+abstract class AbstractMenu extends Table {
 
-    protected RetroMMO retroMMO;
-    protected Screen screen;
-    protected Stage stage;
-    protected Skin skin;
-    protected boolean debug;
+    final RetroMMO retroMMO;
+    final Screen screen;
+    final Stage stage;
+    final Skin skin;
+    final boolean debug;
 
-    public AbstractMenu(RetroMMO retroMMO, Screen screen, Stage stage, Skin skin, boolean debug) {
+    AbstractMenu(RetroMMO retroMMO, Screen screen, Stage stage, Skin skin, boolean debug) {
         this.retroMMO = retroMMO;
         this.screen = screen;
         this.stage = stage;

@@ -3,10 +3,8 @@ package com.retrommo.client.netty.listeners;
 import com.retrommo.client.RetroMMO;
 import com.retrommo.client.netty.ObjectListener;
 import com.retrommo.client.netty.ObjectType;
-import com.retrommo.client.screens.MainMenuScreen;
-import com.retrommo.iocommon.AuthSuccess;
+import com.retrommo.iocommon.wire.server.AuthSuccess;
 
-import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 
 /*********************************************************************************
@@ -30,18 +28,17 @@ public class AuthSuccessListener implements ObjectListener {
     private RetroMMO retroMMO;
 
     @ObjectType(getType = AuthSuccess.class)
-    public void onLogin(AuthSuccess authSuccess, ChannelHandlerContext ctx) {
+    public void onLogin(AuthSuccess authSuccess) {
 
         boolean isAuthenticated = authSuccess.isLoginSuccess();
         boolean isVersionCheckPassed = authSuccess.isVersionCheckPassed();
 
+        retroMMO.getLoginScreen().showLoginInfo(isAuthenticated, isVersionCheckPassed);
+
         if (isAuthenticated && isVersionCheckPassed) {
-            retroMMO.getMainMenuScreen().setSwitchScreens(true);
+            retroMMO.getLoginScreen().setSwitchScreens(true);
         } else {
-            ctx.close();
-            MainMenuScreen mainMenuScreen = retroMMO.getMainMenuScreen();
-            mainMenuScreen.showLoginError(isAuthenticated, isVersionCheckPassed);
-            mainMenuScreen.setNettyStarted(false);
+            retroMMO.stopNetty();
         }
     }
 }

@@ -1,10 +1,8 @@
-package com.retrommo.iocommon;
+package com.retrommo.iocommon.wire.client;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import lombok.Getter;
-import lombok.Setter;
 
 /*********************************************************************************
  *
@@ -22,9 +20,14 @@ import lombok.Setter;
  * without the prior written permission of the owner.
  */
 @Getter
-@Setter
-public class AuthSuccess implements Serializable {
-    private boolean loginSuccess = false;
-    private boolean versionCheckPassed = false;
-    private UUID uuid;
+public class LoginInfo implements Serializable {
+
+    private final String account;
+    private final String password;
+    private final String version = "0.1.0";
+
+    public LoginInfo(String account, String password) {
+        this.account = account;
+        this.password = password;
+    }
 }

@@ -1,21 +1,16 @@
 package com.retrommo.client.ecs.systems;
 
-import com.badlogic.ashley.core.ComponentMapper;
-import com.badlogic.ashley.core.Engine;
-import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.EntitySystem;
-import com.badlogic.ashley.core.Family;
-import com.badlogic.ashley.utils.ImmutableArray;
+import com.artemis.Aspect;
+import com.artemis.systems.IteratingSystem;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.retrommo.client.ecs.ECS;
 import com.retrommo.client.ecs.components.PositionComponent;
 import com.retrommo.client.ecs.components.RotationComponent;
 import com.retrommo.client.ecs.components.ScaleComponent;
 import com.retrommo.client.ecs.components.SizeComponent;
 import com.retrommo.client.ecs.components.TextureComponent;
-
-import lombok.AllArgsConstructor;
 
 /*********************************************************************************
  *
@@ -32,68 +27,45 @@ import lombok.AllArgsConstructor;
  * including photocopying, recording, or other electronic or mechanical methods, 
  * without the prior written permission of the owner.
  */
-public class RenderSystem extends EntitySystem {
+public class RenderSystem extends IteratingSystem {
 
-    private static final Family FAMILY = Family.all(
-            PositionComponent.class,
-            SizeComponent.class,
-            TextureComponent.class,
-            RotationComponent.class,
-            ScaleComponent.class
-    ).get();
+    private final ECS ecs;
+    private final ScreenViewport viewport;
+    private final SpriteBatch batch;
 
-    private static final ComponentMapper<PositionComponent> POSITION = ComponentMapper.getFor(PositionComponent.class);
-    private static final ComponentMapper<SizeComponent> SIZE = ComponentMapper.getFor(SizeComponent.class);
-    private static final ComponentMapper<TextureComponent> TEXTURE = ComponentMapper.getFor(TextureComponent.class);
-    private static final ComponentMapper<RotationComponent> ROTATIONS = ComponentMapper.getFor(RotationComponent.class);
-    private static final ComponentMapper<ScaleComponent> SCALE = ComponentMapper.getFor(ScaleComponent.class);
-
-    private Viewport viewport;
-    private SpriteBatch batch;
-
-    private ImmutableArray<Entity> entities;
-
-    public RenderSystem(Viewport viewport, SpriteBatch batch) {
+    public RenderSystem(ECS ecs, ScreenViewport viewport, SpriteBatch batch) {
+        super(Aspect.all(PositionComponent.class, RotationComponent.class, ScaleComponent.class, SizeComponent.class, TextureComponent.class));
+        this.ecs = ecs;
         this.viewport = viewport;
         this.batch = batch;
     }
 
     @Override
-    public void addedToEngine(Engine engine) {
-        entities = engine.getEntitiesFor(FAMILY);
-    }
-
-    @Override
-    public void update(float deltaTime) {
-        // called every frame
+    protected void process(int entityId) {
         viewport.apply();
 
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
-        draw();
+        draw(entityId);
         batch.end();
     }
 
-    private void draw() {
-        for (Entity entity : entities) {
-            PositionComponent position = POSITION.get(entity);
-            SizeComponent size = SIZE.get(entity);
-            TextureComponent texture = TEXTURE.get(entity);
-            RotationComponent rotationComponent = ROTATIONS.get(entity);
-            ScaleComponent scaleComponent = SCALE.get(entity);
+    private void draw(int entityId) {
 
-            Texture myTexture = texture.texture;
+        PositionComponent position = ecs.getPositionMapper().get(entityId);
+        SizeComponent size = ecs.getSizeMapper().get(entityId);
+        ScaleComponent scale = ecs.getScaleMapper().get(entityId);
+        Texture texture = ecs.getTextureMapper().get(entityId).texture;
 
-            batch.draw(myTexture,
-                    position.x, position.y,
-                    position.x / 2 - (size.width /2f), position.y / 2 - (size.height / 2f),
-                    size.width, size.height,
-                    scaleComponent.scaleX, scaleComponent.scaleY,
-                    rotationComponent.rotation,
-                    1, 1,
-                    myTexture.getWidth(), myTexture.getHeight(),
-                    false, false
-            );
-        }
+        batch.draw(texture,
+                position.getX(), position.getY(),
+                position.getX() / 2 - (size.getWidth() / 2f), position.getY() / 2 - (size.getHeight() / 2f),
+                size.getWidth(), size.getHeight(),
+                scale.getScaleX(), scale.getScaleY(),
+                ecs.getRotationMapper().get(entityId).getRotation(),
+                1, 1,
+                texture.getWidth(), texture.getHeight(),
+                false, false
+        );
     }
 }

@@ -1,24 +1,19 @@
-package com.retrommo.client.managers;
+package com.retrommo.iocommon.wire.client;
 
+import java.io.Serializable;
 
-import com.badlogic.ashley.core.Entity;
-import com.retrommo.client.RetroMMO;
-
-import java.util.UUID;
-
-import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
 
 /*********************************************************************************
  *
- * OWNER: Robert Andrew Brown & Joseph Rugh
- * PROGRAMMER: Robert Andrew Brown & Joseph Rugh
- * PROJECT: RetroMMO-Client
+ * OWNER: Robert Andrew Brown
+ * PROGRAMMER: Robert Andrew Brown
+ * PROJECT: retrommo-server
  * DATE: 3/26/2017
  * _______________________________________________________________________________
  *
- * Copyright © 2017 RetroMMO.com. All Rights Reserved.
+ * Copyright © 2017 Robert Andrew Brown. All Rights Reserved.
  *
  * No part of this project and/or code and/or source code and/or source may be 
  * reproduced, distributed, or transmitted in any form or by any means, 
@@ -27,17 +22,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class MainPlayer {
-
-    private RetroMMO retroMMO;
-    private Channel channel;
-    private UUID uuid;
+public class EntityMove implements Serializable {
+    private int entityId;
+    private int mapId;
     private float x, y;
-    private Entity entity;
-
-    public MainPlayer(RetroMMO retroMMO) {
-        this.retroMMO = retroMMO;
-    }
-
-
 }

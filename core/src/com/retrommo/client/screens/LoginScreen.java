@@ -1,8 +1,10 @@
 package com.retrommo.client.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -13,9 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.retrommo.client.RetroMMO;
-import com.retrommo.client.netty.SetupClient;
+import com.retrommo.client.assets.Assets;
 import com.retrommo.client.util.GraphicsUtils;
-import com.retrommo.iocommon.LoginInfo;
+import com.retrommo.iocommon.wire.client.LoginInfo;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -37,30 +39,31 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class MainMenuScreen implements Screen {
+public class LoginScreen extends ScreenAdapter {
 
-    private RetroMMO retroMMO;
-    private Stage stage;
+    private final RetroMMO retroMMO;
+    private final Batch batch;
+    private final Stage stage;
 
+    private final AssetManager assetManager;
     private Texture background;
-
     private TextField accountField;
     private TextField passwordField;
 
     private LoginInfo loginInfo;
-    private boolean nettyStarted = false;
-
     private volatile boolean switchScreens = false;
 
-    public MainMenuScreen(RetroMMO retroMMO) {
+    public LoginScreen(RetroMMO retroMMO) {
         this.retroMMO = retroMMO;
+        batch = retroMMO.getBatch();
         stage = new Stage(new ScreenViewport());
+        assetManager = retroMMO.getAssetManager();
         Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void show() {
-        background = new Texture(Gdx.files.internal("background/Badlands.png"));
+        background = assetManager.get(Assets.graphics.LOGIN_BACKGROUND);
 
         // setup display table
         Table table = new Table();
@@ -69,10 +72,10 @@ public class MainMenuScreen implements Screen {
         stage.addActor(table);
 
         // temporary until asset manager is implemented
-        Skin skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        Skin skin = new Skin(Gdx.files.internal(Assets.userInterface.UI_SKIN));
 
         // create widgets
-        Label nameLabel = new Label("RetroMMO v0.1.0", skin);
+        Label nameLabel = new Label("RetroMMO v" + RetroMMO.GAME_VERSION, skin);
         Label accountLabel = new Label("Account", skin);
         Label passwordLabel = new Label("Password", skin);
 
@@ -116,7 +119,7 @@ public class MainMenuScreen implements Screen {
             }
         });
 
-        // opens up web page for registering
+        // opens up web page for player registration
         registerButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -129,30 +132,22 @@ public class MainMenuScreen implements Screen {
     public void render(float delta) {
         GraphicsUtils.clearScreen();
 
-        retroMMO.getBatch().begin();
-        retroMMO.getBatch().draw(background, 0, 0, stage.getWidth(), stage.getHeight());
-        retroMMO.getBatch().end();
+        batch.begin();
+        batch.draw(background, 0, 0, stage.getWidth(), stage.getHeight());
+        batch.end();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
 
+        // If the login was successful, this boolean will become true.
         if (switchScreens) {
-            retroMMO.setGameScreen(new GameScreen(retroMMO));
-            retroMMO.setScreen(retroMMO.getGameScreen());
+            retroMMO.setScreen(ScreenTypes.GAME);
         }
     }
 
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-    }
-
-    @Override
-    public void pause() {
-    }
-
-    @Override
-    public void resume() {
     }
 
     @Override
@@ -163,7 +158,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
-        System.out.println("[Dispose] MainMenuScreen disposed.");
+        System.out.println("[Dispose] LoginScreen disposed.");
         background.dispose();
         stage.dispose();
     }
@@ -175,17 +170,10 @@ public class MainMenuScreen implements Screen {
         Gdx.input.setOnscreenKeyboardVisible(false); // close the android keyboard
         loginInfo = new LoginInfo(accountField.getText(), passwordField.getText());
 
-        // start netty
-        if (!nettyStarted) {
-            nettyStarted = true;
-            try {
-                new Thread(new SetupClient(retroMMO, RetroMMO.SERVER, 1337)).start();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        // Start our network connection.
+        retroMMO.startNetty();
 
-        //clear password filed
+        // Clear password filed.
         passwordField.setText("");
     }
 
@@ -195,9 +183,19 @@ public class MainMenuScreen implements Screen {
      * @param isAuthenticated      True if the accountName/password combo is accurate.
      * @param isVersionCheckPassed True if the game-client version matches the server version.
      */
-    public void showLoginError(boolean isAuthenticated, boolean isVersionCheckPassed) {
-        System.out.println("Login Error!!");
-        System.out.println("Authenticated: " + isAuthenticated + " VersionCheckPassed: " + isVersionCheckPassed);
+    public void showLoginInfo(boolean isAuthenticated, boolean isVersionCheckPassed) {
+        if (isAuthenticated && isVersionCheckPassed) {
+            System.out.println("Login success!!");
+            return;
+        }
+
+        if (!isAuthenticated) {
+            System.out.println("Incorrect AccountName/Password combination!");
+        }
+
+        if (!isVersionCheckPassed) {
+            System.out.println("Version mismatch! Please upgrade your game-client!");
+        }
     }
 
     /*****************************************************************
@@ -215,7 +213,6 @@ public class MainMenuScreen implements Screen {
             // user hit enter/tab/etc, lets move to next text field
             if (c == '\n' || c == '\r' || c == '\t') {
                 stage.setKeyboardFocus(passwordField);
-                return;
             }
         }
     }
@@ -226,7 +223,6 @@ public class MainMenuScreen implements Screen {
             if (c == '\t') return; // cancel tab
             if (c == '\n' || c == '\r') { // user hit enter, try login
                 attemptLogin();
-                return;
             }
         }
     }

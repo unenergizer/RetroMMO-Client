@@ -1,16 +1,16 @@
-package com.retrommo.iocommon;
+package com.retrommo.client.screens.menus;
 
-import java.io.Serializable;
-
-import lombok.Getter;
-import lombok.Setter;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.retrommo.client.RetroMMO;
 
 /*********************************************************************************
  *
  * OWNER: Robert Andrew Brown & Joseph Rugh
  * PROGRAMMER: Robert Andrew Brown & Joseph Rugh
- * PROJECT: retrommo-server
- * DATE: 3/26/2017
+ * PROJECT: RetroMMO-Client
+ * DATE: 4/2/2017
  * _______________________________________________________________________________
  *
  * Copyright © 2017 RetroMMO.com. All Rights Reserved.
@@ -20,8 +20,21 @@ import lombok.Setter;
  * including photocopying, recording, or other electronic or mechanical methods, 
  * without the prior written permission of the owner.
  */
-@Getter
-@Setter
-public class ChatMessage implements Serializable {
-    private String message;
+
+
+public class LoginBox extends AbstractMenu {
+
+    LoginBox(RetroMMO retroMMO, Screen screen, Stage stage, Skin skin, boolean debug) {
+        super(retroMMO, screen, stage, skin, debug);
+    }
+
+    @Override
+    public void create() {
+
+    }
+
+    @Override
+    public void hide() {
+
+    }
 }

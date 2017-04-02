@@ -8,8 +8,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
+import lombok.AllArgsConstructor;
 
 /*********************************************************************************
  *
@@ -26,14 +25,10 @@ import io.netty.handler.logging.LoggingHandler;
  * including photocopying, recording, or other electronic or mechanical methods,
  * without the prior written permission of the owner.
  */
-public class ClientChannelInitializer extends ChannelInitializer<SocketChannel> {
+@AllArgsConstructor
+class ClientChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    final LoggingHandler loggingHandler = new LoggingHandler(getClass(), LogLevel.INFO);
-    private RetroMMO retroMMO;
-
-    public ClientChannelInitializer(RetroMMO retroMMO) {
-        this.retroMMO = retroMMO;
-    }
+    final private RetroMMO retroMMO;
 
     @Override
     public void initChannel(SocketChannel channel) throws Exception {
@@ -41,7 +36,6 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel> 
 
         pipeline.addLast(new ObjectEncoder());
         pipeline.addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-        //pipeline.addLast("logger", loggingHandler);
         pipeline.addLast(new ObjectEchoClientHandler(retroMMO));
     }
 }

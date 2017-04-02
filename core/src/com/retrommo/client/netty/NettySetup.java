@@ -8,6 +8,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.AllArgsConstructor;
 
 /*********************************************************************************
  *
@@ -24,17 +25,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  * including photocopying, recording, or other electronic or mechanical methods,
  * without the prior written permission of the owner.
  */
-public class SetupClient implements Runnable {
+@AllArgsConstructor
+public class NettySetup implements Runnable {
 
-    private RetroMMO retroMMO;
-    private String host;
-    private int port;
-
-    public SetupClient(RetroMMO retroMMO, String host, int port) throws Exception {
-        this.retroMMO = retroMMO;
-        this.host = host;
-        this.port = port;
-    }
+    private final RetroMMO retroMMO;
+    private final String host;
+    private final int port;
 
     @Override
     public void run() {
@@ -49,7 +45,7 @@ public class SetupClient implements Runnable {
             bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
             bootstrap.handler(new ClientChannelInitializer(retroMMO));
 
-            // Start the client.
+            // Start the connection.
             ChannelFuture channelFuture = bootstrap.connect(host, port).sync();
 
             // Wait until the connection is closed.

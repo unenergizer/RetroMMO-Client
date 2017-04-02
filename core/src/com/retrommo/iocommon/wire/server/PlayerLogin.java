@@ -1,18 +1,16 @@
-package com.retrommo.client.netty.listeners;
+package com.retrommo.iocommon.wire.server;
 
-import com.retrommo.client.RetroMMO;
-import com.retrommo.client.netty.ObjectListener;
-import com.retrommo.client.netty.ObjectType;
-import com.retrommo.iocommon.wire.global.ChatMessage;
+import java.io.Serializable;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /*********************************************************************************
  *
  * OWNER: Robert Andrew Brown & Joseph Rugh
  * PROGRAMMER: Robert Andrew Brown & Joseph Rugh
- * PROJECT: RetroMMO-Client
- * DATE: 3/26/2017
+ * PROJECT: retrommo-server
+ * DATE: 3/31/2017
  * _______________________________________________________________________________
  *
  * Copyright © 2017 RetroMMO.com. All Rights Reserved.
@@ -23,15 +21,9 @@ import lombok.AllArgsConstructor;
  * without the prior written permission of the owner.
  */
 @AllArgsConstructor
-public class ChatListener implements ObjectListener {
-
-    private RetroMMO retroMMO;
-
-    @ObjectType(getType = ChatMessage.class)
-    public void onChatReceived(ChatMessage chatMessage) {
-
-        if (retroMMO.getGameScreen() != null) {
-            retroMMO.getGameScreen().getChatBox().getChatArea().appendText(chatMessage.getMessage());
-        }
-    }
+@Getter
+public class PlayerLogin implements Serializable {
+    private String accountName;
+    private String loginMessage;
+    private int entityId;
 }

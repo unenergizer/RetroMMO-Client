@@ -1,8 +1,12 @@
 package com.retrommo.client.ecs.components;
 
-import com.badlogic.ashley.core.Component;
+import com.artemis.Component;
 
-public class RotationComponent implements Component {
+import lombok.Getter;
+import lombok.Setter;
 
-    public float rotation;
+@Getter
+@Setter
+public class RotationComponent extends Component {
+    private float rotation;
 }

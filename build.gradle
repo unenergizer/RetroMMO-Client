@@ -91,11 +91,11 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         compile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
-        compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
         compile "com.badlogicgames.gdx:gdx-ai:$aiVersion"
         compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
         compile group: 'io.netty', name: 'netty-all', version: '4.1.9.Final'
         compile "org.projectlombok:lombok:1.16.16"
+        compile "net.onedaybeard.artemis:artemis-odb:2.1.0"
     }
 }
 

@@ -1,15 +1,20 @@
 package com.retrommo.client;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.retrommo.client.managers.MainPlayer;
+import com.retrommo.client.netty.NettySetup;
 import com.retrommo.client.netty.listeners.AuthSuccessListener;
 import com.retrommo.client.netty.listeners.ChatListener;
 import com.retrommo.client.netty.listeners.EntityMoveListener;
-import com.retrommo.client.netty.listeners.ListenerManager;
+import com.retrommo.client.netty.listeners.EntityReceivedListener;
+import com.retrommo.client.netty.listeners.NetworkListenerManager;
 import com.retrommo.client.screens.GameScreen;
-import com.retrommo.client.screens.MainMenuScreen;
+import com.retrommo.client.screens.LoadingScreen;
+import com.retrommo.client.screens.LoginScreen;
+import com.retrommo.client.screens.ScreenTypes;
 
+import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,43 +37,116 @@ import lombok.Setter;
 @Setter
 public class RetroMMO extends Game {
 
-    private SpriteBatch batch;
-    private ListenerManager listenerManager;
-    private MainMenuScreen mainMenuScreen;
-    private GameScreen gameScreen;
-    private MainPlayer mainPlayer;
+    // GENERAL
+    public static final String GAME_VERSION = "0.1.0";
+    public static final float WIDTH = 1080;
+    public static final float HEIGHT = WIDTH / 16 * 9;
 
-    public static final String SERVER = "24.72.165.55";
+    // NETWORKING
+    private final String serverAddress = "24.72.165.55";
+    private final int serverPort = 1337;
+    private NetworkListenerManager networkListenerManager;
+    private boolean nettyStarted = false;
+    private Channel channel;
+
+    // ASSETS
+    private SpriteBatch batch;
+    private AssetManager assetManager;
+
+    // SCREENS
+    private LoadingScreen loadingScreen;
+    private LoginScreen loginScreen;
+    private GameScreen gameScreen;
 
     @Override
     public void create() {
-        // setup manager classes
-        mainPlayer = new MainPlayer(this);
-        loadListeners();
-
-        // load settings
-        // load assets
+        loadNetworkListeners();
+        assetManager = new AssetManager();
         batch = new SpriteBatch();
-        mainMenuScreen = new MainMenuScreen(this);
-        setScreen(mainMenuScreen);
-    }
-
-    @Override
-    public void render() {
-        super.render();
+        setScreen(ScreenTypes.LOADING);
     }
 
     @Override
     public void dispose() {
         batch.dispose();
-        if (mainPlayer.getChannel() != null) mainPlayer.getChannel().close();
+        assetManager.dispose();
+        stopNetty();
     }
 
-    private void loadListeners() {
-        listenerManager = new ListenerManager();
+    /**
+     * This will setup our client to receive network
+     * objects coming from the server.
+     */
+    private void loadNetworkListeners() {
+        networkListenerManager = new NetworkListenerManager();
 
-        listenerManager.addListener(new AuthSuccessListener(this));
-        listenerManager.addListener(new ChatListener(this));
-        listenerManager.addListener(new EntityMoveListener(this));
+        networkListenerManager.addListener(new AuthSuccessListener(this));
+        networkListenerManager.addListener(new ChatListener(this));
+        networkListenerManager.addListener(new EntityMoveListener(this));
+        networkListenerManager.addListener(new EntityReceivedListener(this));
+    }
+
+    /**
+     * This is used to change the game screen.
+     *
+     * @param screenTypes The type of screen we want to change to.
+     */
+    public void setScreen(ScreenTypes screenTypes) {
+        switch (screenTypes) {
+            case LOADING:
+                if (loadingScreen == null) loadingScreen = new LoadingScreen(this);
+                setScreen(loadingScreen);
+                break;
+            case LOGIN:
+                if (loginScreen == null) loginScreen = new LoginScreen(this);
+                setScreen(loginScreen);
+                break;
+            case GAME:
+                if (gameScreen == null) gameScreen = new GameScreen(this);
+                setScreen(gameScreen);
+                break;
+        }
+    }
+
+    /**
+     * Sends objects over the network to the server.
+     *
+     * @param object The object to send to the server.
+     */
+    public void sendNetworkData(Object object) {
+        channel.writeAndFlush(object);
+    }
+
+    /**
+     * This will start Netty and connect us to the server.
+     */
+    public void startNetty() {
+        if (!nettyStarted) {
+            nettyStarted = true;
+            try {
+                new Thread(new NettySetup(this, serverAddress, serverPort)).start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * This will disconnect the player from the
+     * server and send them to the login screen.
+     */
+    public void disconnectClient() {
+        stopNetty();
+        setScreen(ScreenTypes.LOGIN);
+    }
+
+    /**
+     * This will close the server connection.
+     */
+    public void stopNetty() {
+        nettyStarted = false;
+        if (channel == null) return;
+        channel.close();
+        channel = null;
     }
 }

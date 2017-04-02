@@ -1,7 +1,6 @@
 package com.retrommo.client.screens;
 
-import com.badlogic.ashley.core.Engine;
-import com.badlogic.ashley.core.Entity;
+import com.artemis.World;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
@@ -16,17 +15,14 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.retrommo.client.RetroMMO;
-import com.retrommo.client.ecs.components.PositionComponent;
-import com.retrommo.client.ecs.components.RotationComponent;
-import com.retrommo.client.ecs.components.ScaleComponent;
-import com.retrommo.client.ecs.components.SizeComponent;
-import com.retrommo.client.ecs.components.TextureComponent;
-import com.retrommo.client.ecs.systems.EntityBuilder;
-import com.retrommo.client.ecs.systems.RenderSystem;
-import com.retrommo.client.managers.MainPlayer;
+import com.retrommo.client.assets.Assets;
+import com.retrommo.client.ecs.ECS;
+import com.retrommo.client.ecs.systems.EntityFactory;
 import com.retrommo.client.screens.input.KeyboardInput;
 import com.retrommo.client.screens.menus.ChatBox;
 import com.retrommo.client.util.GraphicsUtils;
+import com.retrommo.iocommon.enums.ClientStates;
+import com.retrommo.iocommon.wire.client.ClientState;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -51,40 +47,35 @@ import lombok.Setter;
 public class GameScreen implements Screen {
 
     private RetroMMO retroMMO;
-    private final int WIDTH = 1080;
-    private final int HEIGHT = WIDTH / 16 * 9;
 
-    // menus
+    // USER INTERFACE
     private Stage stage;
     private ChatBox chatBox;
 
-    // map
+    // MAP
     private OrthographicCamera camera;
     private ScreenViewport viewport;
     private TiledMap map;
     private OrthogonalTiledMapRenderer mapRenderer;
 
-    // input
+    // INPUT
     private InputMultiplexer inputMultiplexer;
 
-    // asset and entities
+    // ASSETS
     private AssetManager assetManager;
-    private Engine engine;
+    private ECS ecs;
+    private World world;
     private SpriteBatch batch;
 
-    // remove later
-    private String playerImg = "player/player.png";
+    private EntityFactory entityFactory;
 
-    private EntityBuilder entityBuilder;
-
-    private MainPlayer mainPlayer;
+    private int clientPlayerId;
 
     public GameScreen(RetroMMO retroMMO) {
         this.retroMMO = retroMMO;
-        mainPlayer = retroMMO.getMainPlayer();
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, WIDTH, HEIGHT);
+        camera.setToOrtho(false, RetroMMO.WIDTH, RetroMMO.HEIGHT);
         camera.update();
 
         stage = new Stage(viewport = new ScreenViewport());
@@ -94,37 +85,50 @@ public class GameScreen implements Screen {
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(new KeyboardInput());
         Gdx.input.setInputProcessor(inputMultiplexer);
+
+        assetManager = new AssetManager();
+        assetManager.load(Assets.graphics.TEMP_PLAYER_IMG, Texture.class);
+        assetManager.finishLoading();
+
+        batch = new SpriteBatch();
+        ecs = new ECS(viewport, batch); //TODO: REFACTOR
+        world = ecs.getWorld();//TODO: REFACTOR
+
+        entityFactory = new EntityFactory(assetManager, ecs);
     }
 
     @Override
     public void show() {
 
-        assetManager = new AssetManager();
-
-        // load assets here
-        assetManager.load(playerImg, Texture.class);
-
-        assetManager.finishLoading();
-
-        // create ashley engine
-        engine = new Engine();
-
-        batch = new SpriteBatch();
-
-        engine.addSystem(new RenderSystem(viewport, batch));
-
-        entityBuilder = new EntityBuilder(assetManager, engine);
-        mainPlayer.setEntity(entityBuilder.makeEntity(350, 350, 25, 25, playerImg));
-
         System.out.println("[GameScreen] Creating main game screen.");
-        Skin skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        Skin skin = new Skin(Gdx.files.internal(Assets.userInterface.UI_SKIN));
 
         chatBox = new ChatBox(retroMMO, this, stage, skin, false);
         chatBox.create();
 
         // map
-        map = new TmxMapLoader().load("maps/fields.tmx");
+        map = new TmxMapLoader().load(Assets.maps.TEST_MAP); //TODO: LOAD WITH ASSET MANAGER!
         mapRenderer = new OrthogonalTiledMapRenderer(map);
+
+        // send server new game state
+        ClientState state = new ClientState();
+        state.setState(ClientStates.GAME_READY);
+        retroMMO.sendNetworkData(state);
+
+        //TODO: CREATE ENTITY SOMEWHERE ELSE!!!!!
+//        Entity entity = ecs.getWorld().getEntity(clientPlayerId);
+//
+//        System.out.println("entity: " + entity);
+//
+//        ServerIdComponent serverIdComponent = entity.getComponent(ServerIdComponent.class);
+//
+//        System.out.println("server id component: " + serverIdComponent);
+
+        // Making the player
+//        entityFactory = new EntityFactory(assetManager, ecs);
+//        clientPlayerId = entityFactory.makeEntity(350, 350, 25, 25, playerImg);
+//        PlayerData playerData = ecs.createComponent(ecs.getWorld().getEntity(clientPlayerId), ecs.getPlayerDataMapper());
+//        playerData.setChannel(channel);
     }
 
     @Override
@@ -136,7 +140,8 @@ public class GameScreen implements Screen {
         mapRenderer.render();
 
         // batch goes here
-        engine.update(Gdx.graphics.getDeltaTime());
+        world.setDelta(delta);
+        world.process();
 
         // draw ui
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));

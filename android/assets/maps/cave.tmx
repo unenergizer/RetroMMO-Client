@@ -212,14 +212,14 @@
 </data>
  </layer>
  <objectgroup name="door">
-  <object id="8" name="cave_out" x="448" y="544" width="32" height="16"/>
+  <object serverId="8" name="cave_out" x="448" y="544" width="32" height="16"/>
  </objectgroup>
  <objectgroup name="collision">
-  <object id="1" x="480" y="512" width="672" height="48"/>
-  <object id="2" x="1152" y="512" width="16" height="496"/>
-  <object id="3" x="400" y="1008" width="768" height="16"/>
-  <object id="4" x="400" y="512" width="16" height="496"/>
-  <object id="6" x="416" y="512" width="32" height="48"/>
-  <object id="7" x="448" y="512" width="32" height="32"/>
+  <object serverId="1" x="480" y="512" width="672" height="48"/>
+  <object serverId="2" x="1152" y="512" width="16" height="496"/>
+  <object serverId="3" x="400" y="1008" width="768" height="16"/>
+  <object serverId="4" x="400" y="512" width="16" height="496"/>
+  <object serverId="6" x="416" y="512" width="32" height="48"/>
+  <object serverId="7" x="448" y="512" width="32" height="32"/>
  </objectgroup>
 </map>

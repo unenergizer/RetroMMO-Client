@@ -1,9 +1,14 @@
 package com.retrommo.client.ecs.components;
 
-import com.badlogic.ashley.core.Component;
+import com.artemis.Component;
 
-public class SizeComponent implements Component {
+import lombok.Getter;
+import lombok.Setter;
 
-    public float width;
-    public float height;
+@Getter
+@Setter
+public class SizeComponent extends Component {
+
+    private float width;
+    private float height;
 }

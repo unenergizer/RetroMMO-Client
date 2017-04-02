@@ -1,11 +1,11 @@
-package com.retrommo.client.netty.enums;
+package com.retrommo.iocommon.enums;
 
 /*********************************************************************************
  *
  * OWNER: Robert Andrew Brown & Joseph Rugh
  * PROGRAMMER: Robert Andrew Brown & Joseph Rugh
- * PROJECT: RetroMMO-Client
- * DATE: 3/26/2017
+ * PROJECT: retrommo-server
+ * DATE: 3/30/2017
  * _______________________________________________________________________________
  *
  * Copyright © 2017 RetroMMO.com. All Rights Reserved.
@@ -15,6 +15,8 @@ package com.retrommo.client.netty.enums;
  * including photocopying, recording, or other electronic or mechanical methods, 
  * without the prior written permission of the owner.
  */
-public enum ChatChannels {
-    GLOBAL;
+
+public enum EntityTypes {
+    CLIENT_PLAYER, // sent to the a client
+    PLAYER // all other players on a client
 }

@@ -4,6 +4,7 @@ import com.retrommo.client.RetroMMO;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.AllArgsConstructor;
 
 /*********************************************************************************
  *
@@ -20,26 +21,23 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * including photocopying, recording, or other electronic or mechanical methods,
  * without the prior written permission of the owner.
  */
-public class ObjectEchoClientHandler extends ChannelInboundHandlerAdapter {
+@AllArgsConstructor
+class ObjectEchoClientHandler extends ChannelInboundHandlerAdapter {
 
-    private RetroMMO retroMMO;
-
-    public ObjectEchoClientHandler(RetroMMO retroMMO) {
-        this.retroMMO = retroMMO;
-    }
+    private final RetroMMO retroMMO;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        // save channel for later
-        retroMMO.getMainPlayer().setChannel(ctx.channel());
+        // Send login information
+        ctx.writeAndFlush(retroMMO.getLoginScreen().getLoginInfo());
 
-        // send login info on netty first connect
-        ctx.writeAndFlush(retroMMO.getMainMenuScreen().getLoginInfo());
+        // The channel is now active, save the channel for use later.
+        retroMMO.setChannel(ctx.channel());
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        retroMMO.getListenerManager().runListeners(msg, ctx);
+        retroMMO.getNetworkListenerManager().runListeners(msg);
     }
 
     @Override

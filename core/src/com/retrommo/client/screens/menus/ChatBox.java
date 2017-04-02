@@ -1,15 +1,13 @@
 package com.retrommo.client.screens.menus;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.utils.Queue;
 import com.retrommo.client.RetroMMO;
-import com.retrommo.iocommon.ChatMessage;
+import com.retrommo.iocommon.wire.global.ChatMessage;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -38,13 +36,7 @@ public class ChatBox extends AbstractMenu {
     private TextArea chatArea;
     private ScrollPane scrollPane;
     private TextField chatField;
-
     private ChatMessage chatMessage;
-
-//    private int prevMessagesIndex = 0;
-//    private final int MAX_PREVIOUS_MESSAGES = 5;
-//    private int numPreviousMessages;
-//    private Queue<String> prevMessages = new Queue<>(MAX_PREVIOUS_MESSAGES);
 
     public ChatBox(RetroMMO retroMMO, Screen screen, Stage stage, Skin skin, boolean debug) {
         super(retroMMO, screen, stage, skin, debug);
@@ -89,25 +81,13 @@ public class ChatBox extends AbstractMenu {
                 chatMessage.setMessage(msg);
 
                 // send message down the wire
-                retroMMO.getMainPlayer().getChannel().writeAndFlush(chatMessage);
+                retroMMO.sendNetworkData(chatMessage);
 
                 // clear typed text for next message
                 chatField.setText("");
 
-                // clear input after message sent
+                // clear input focus after message sent
                 stage.setKeyboardFocus(null);
-
-//                // test if the messages are full
-//                if (!(numPreviousMessages++ < MAX_PREVIOUS_MESSAGES)) {
-//                    prevMessages.removeLast();
-//                }
-//                prevMessages.addFirst(msg);
-//
-//                System.out.println("-----Previous Messages-----");
-//                for (String m : prevMessages) System.out.println(m);
-//                System.out.println("----------------------------");
-
-                return;
             }
         }
     }
