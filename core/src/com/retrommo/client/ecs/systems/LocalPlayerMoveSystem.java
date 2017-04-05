@@ -2,16 +2,16 @@ package com.retrommo.client.ecs.systems;
 
 import com.artemis.Aspect;
 import com.artemis.systems.IteratingSystem;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.retrommo.client.RetroMMO;
 import com.retrommo.client.ecs.ECS;
+import com.retrommo.client.ecs.components.Player;
 import com.retrommo.client.ecs.components.PositionComponent;
 import com.retrommo.client.ecs.components.RotationComponent;
 import com.retrommo.client.ecs.components.ScaleComponent;
 import com.retrommo.client.ecs.components.SizeComponent;
 import com.retrommo.client.ecs.components.TextureComponent;
+import com.retrommo.client.screens.input.KeyboardInput;
+import com.retrommo.iocommon.wire.client.EntityMove;
 
 /*********************************************************************************
  *
@@ -28,12 +28,12 @@ import com.retrommo.client.ecs.components.TextureComponent;
  * including photocopying, recording, or other electronic or mechanical methods, 
  * without the prior written permission of the owner.
  */
-public class RenderSystem extends IteratingSystem {
+public class LocalPlayerMoveSystem extends IteratingSystem {
 
     private final RetroMMO retroMMO;
     private final ECS ecs;
 
-    public RenderSystem(RetroMMO retroMMO, ECS ecs) {
+    public LocalPlayerMoveSystem(RetroMMO retroMMO, ECS ecs) {
         super(Aspect.all(PositionComponent.class, RotationComponent.class, ScaleComponent.class, SizeComponent.class, TextureComponent.class));
         this.retroMMO = retroMMO;
         this.ecs = ecs;
@@ -41,33 +41,30 @@ public class RenderSystem extends IteratingSystem {
 
     @Override
     protected void process(int entityId) {
-        Batch batch = retroMMO.getBatch();
-        Viewport viewport = retroMMO.getGameScreen().getViewport();
-        viewport.apply();
+        int serverID = retroMMO.getEntityManager().getClientData().getServerID();
+        int localID = retroMMO.getEntityManager().getClientData().getLocalID();
 
-        batch.setProjectionMatrix(viewport.getCamera().combined);
-        batch.begin();
-        draw(entityId);
-        batch.end();
-    }
+        PositionComponent position = ecs.getPositionMapper().get(localID);
+        float x = position.getX();
+        float y = position.getY();
 
-    private void draw(int entityId) {
-        Batch batch = retroMMO.getBatch();
+        KeyboardInput input = retroMMO.getGameScreen().getKeyboardInput();
+        EntityMove entityMove = new EntityMove();
+        entityMove.setEntityId(serverID);
+        entityMove.setMapId(0);
 
-        PositionComponent position = ecs.getPositionMapper().get(entityId);
-        SizeComponent size = ecs.getSizeMapper().get(entityId);
-        ScaleComponent scale = ecs.getScaleMapper().get(entityId);
-        Texture texture = ecs.getTextureMapper().get(entityId).texture;
+        entityMove.setX(x + input.getXmovement());
+        entityMove.setY(y + input.getYmovement());
 
-        batch.draw(texture,
-                position.getX(), position.getY(),
-                position.getX() / 2 - (size.getWidth() / 2f), position.getY() / 2 - (size.getHeight() / 2f),
-                size.getWidth(), size.getHeight(),
-                scale.getScaleX(), scale.getScaleY(),
-                ecs.getRotationMapper().get(entityId).getRotation(),
-                1, 1,
-                texture.getWidth(), texture.getHeight(),
-                false, false
-        );
+        position.setX(x + input.getXmovement());
+        position.setY(y + input.getYmovement());
+
+        retroMMO.sendNetworkData(entityMove);
+
+//        System.out.println("Moving entity...");
+//        System.out.println("ServerID: " + serverID);
+//        System.out.println("LocalID: " + localID);
+//        System.out.println("x: " + x + input.getXmovement());
+//        System.out.println("y: " + y + input.getYmovement());
     }
 }

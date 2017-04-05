@@ -1,10 +1,11 @@
 package com.retrommo.iocommon.wire.server;
 
 import com.retrommo.iocommon.enums.EntityTypes;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.io.Serializable;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /*********************************************************************************
  *
@@ -24,7 +25,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Getter
 public class SendEntityData implements Serializable {
-    private int serverEntityId;
+    private int serverEntityID;
     private EntityTypes entityType;
     private float x, y;
+    private int mapID;
 }

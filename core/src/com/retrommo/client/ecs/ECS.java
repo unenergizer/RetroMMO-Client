@@ -6,15 +6,16 @@ import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.WorldConfiguration;
 import com.artemis.WorldConfigurationBuilder;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.retrommo.client.ecs.components.PlayerData;
+import com.retrommo.client.RetroMMO;
+import com.retrommo.client.ecs.components.LocalPlayer;
+import com.retrommo.client.ecs.components.Player;
 import com.retrommo.client.ecs.components.PositionComponent;
 import com.retrommo.client.ecs.components.RotationComponent;
 import com.retrommo.client.ecs.components.ScaleComponent;
 import com.retrommo.client.ecs.components.ServerIdComponent;
 import com.retrommo.client.ecs.components.SizeComponent;
 import com.retrommo.client.ecs.components.TextureComponent;
+import com.retrommo.client.ecs.systems.LocalPlayerMoveSystem;
 import com.retrommo.client.ecs.systems.RenderSystem;
 
 import lombok.Getter;
@@ -38,6 +39,7 @@ import lombok.Getter;
 @Getter
 public class ECS {
 
+    private final RetroMMO retroMMO;
     private final WorldConfiguration config;
     private final World world;
 
@@ -47,12 +49,16 @@ public class ECS {
     private final ComponentMapper<SizeComponent> sizeMapper;
     private final ComponentMapper<TextureComponent> textureMapper;
     private final ComponentMapper<ServerIdComponent> serverIdMapper;
-    private final ComponentMapper<PlayerData> playerDataMapper;
+    private final ComponentMapper<Player> playerDataMapper;
+    private final ComponentMapper<LocalPlayer> localPlayerDataMapper;
 
-    public ECS(ScreenViewport viewport, SpriteBatch batch) {
+    public ECS(RetroMMO retroMMO) {
+        this.retroMMO = retroMMO;
+
         config = new WorldConfigurationBuilder()
                 .with(
-                        new RenderSystem(this, viewport, batch)
+                        new RenderSystem(retroMMO, this),
+                        new LocalPlayerMoveSystem(retroMMO, this)
                 )
                 .build();
 
@@ -65,7 +71,8 @@ public class ECS {
         sizeMapper = new ComponentMapper<>(SizeComponent.class, world);
         textureMapper = new ComponentMapper<>(TextureComponent.class, world);
         serverIdMapper = new ComponentMapper<>(ServerIdComponent.class, world);
-        playerDataMapper = new ComponentMapper<>(PlayerData.class, world);
+        playerDataMapper = new ComponentMapper<>(Player.class, world);
+        localPlayerDataMapper = new ComponentMapper<>(LocalPlayer.class, world);
     }
 
     public <T extends Component> T createComponent(Entity entity, ComponentMapper<T> componentMapper) {

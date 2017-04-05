@@ -77,7 +77,8 @@ public class LoadingScreen extends ScreenAdapter {
                     loadAllAudio();
                     break;
                 case 2:
-
+                    // Looks like were all finished!
+                    assetManager.finishLoading();
                     // After going through all asset types switch screens
                     retroMMO.setScreen(ScreenTypes.LOGIN);
 

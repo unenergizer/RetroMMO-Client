@@ -3,6 +3,7 @@ package com.retrommo.client;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.retrommo.client.ecs.EntityManager;
 import com.retrommo.client.netty.NettySetup;
 import com.retrommo.client.netty.listeners.AuthSuccessListener;
 import com.retrommo.client.netty.listeners.ChatListener;
@@ -45,7 +46,7 @@ public class RetroMMO extends Game {
     // NETWORKING
     private final String serverAddress = "24.72.165.55";
     private final int serverPort = 1337;
-    private NetworkListenerManager networkListenerManager;
+    private final NetworkListenerManager networkListenerManager;
     private boolean nettyStarted = false;
     private Channel channel;
 
@@ -58,16 +59,26 @@ public class RetroMMO extends Game {
     private LoginScreen loginScreen;
     private GameScreen gameScreen;
 
+    // ENTITIES
+    private EntityManager entityManager;
+
+    public RetroMMO() {
+        networkListenerManager = new NetworkListenerManager();
+        assetManager = new AssetManager();
+        entityManager = new EntityManager(this);
+
+        loadNetworkListeners();
+    }
+
     @Override
     public void create() {
-        loadNetworkListeners();
-        assetManager = new AssetManager();
         batch = new SpriteBatch();
         setScreen(ScreenTypes.LOADING);
     }
 
     @Override
     public void dispose() {
+        System.out.println("Disposing RETROMMO");
         batch.dispose();
         assetManager.dispose();
         stopNetty();
@@ -78,8 +89,6 @@ public class RetroMMO extends Game {
      * objects coming from the server.
      */
     private void loadNetworkListeners() {
-        networkListenerManager = new NetworkListenerManager();
-
         networkListenerManager.addListener(new AuthSuccessListener(this));
         networkListenerManager.addListener(new ChatListener(this));
         networkListenerManager.addListener(new EntityMoveListener(this));

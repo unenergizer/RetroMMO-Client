@@ -6,8 +6,6 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -17,7 +15,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.retrommo.client.RetroMMO;
 import com.retrommo.client.assets.Assets;
 import com.retrommo.client.ecs.ECS;
-import com.retrommo.client.ecs.systems.EntityFactory;
+import com.retrommo.client.ecs.EntityFactory;
 import com.retrommo.client.screens.input.KeyboardInput;
 import com.retrommo.client.screens.menus.ChatBox;
 import com.retrommo.client.util.GraphicsUtils;
@@ -46,55 +44,48 @@ import lombok.Setter;
 @Setter
 public class GameScreen implements Screen {
 
-    private RetroMMO retroMMO;
-
+    private final RetroMMO retroMMO;
+    // ASSETS
+    private final AssetManager assetManager;
+    // ENTITY
+    private final ECS ecs;
+    private final World world;
+    private final EntityFactory entityFactory;
+    private boolean gameScreenReady = false;
     // USER INTERFACE
     private Stage stage;
     private ChatBox chatBox;
-
     // MAP
     private OrthographicCamera camera;
     private ScreenViewport viewport;
     private TiledMap map;
     private OrthogonalTiledMapRenderer mapRenderer;
-
     // INPUT
     private InputMultiplexer inputMultiplexer;
-
-    // ASSETS
-    private AssetManager assetManager;
-    private ECS ecs;
-    private World world;
-    private SpriteBatch batch;
-
-    private EntityFactory entityFactory;
-
-    private int clientPlayerId;
+    private KeyboardInput keyboardInput;
 
     public GameScreen(RetroMMO retroMMO) {
         this.retroMMO = retroMMO;
 
+        // Camera and UI
         camera = new OrthographicCamera();
         camera.setToOrtho(false, RetroMMO.WIDTH, RetroMMO.HEIGHT);
         camera.update();
-
         stage = new Stage(viewport = new ScreenViewport());
 
-        // input
+        // Input
         inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(stage);
-        inputMultiplexer.addProcessor(new KeyboardInput());
+        inputMultiplexer.addProcessor(keyboardInput = new KeyboardInput());
         Gdx.input.setInputProcessor(inputMultiplexer);
 
-        assetManager = new AssetManager();
-        assetManager.load(Assets.graphics.TEMP_PLAYER_IMG, Texture.class);
-        assetManager.finishLoading();
+        // Assets
+        assetManager = retroMMO.getAssetManager();
 
-        batch = new SpriteBatch();
-        ecs = new ECS(viewport, batch); //TODO: REFACTOR
-        world = ecs.getWorld();//TODO: REFACTOR
-
-        entityFactory = new EntityFactory(assetManager, ecs);
+        // Entities
+        ecs = new ECS(retroMMO);
+        world = ecs.getWorld();
+        entityFactory = new EntityFactory(retroMMO, ecs);
     }
 
     @Override
@@ -114,25 +105,14 @@ public class GameScreen implements Screen {
         ClientState state = new ClientState();
         state.setState(ClientStates.GAME_READY);
         retroMMO.sendNetworkData(state);
-
-        //TODO: CREATE ENTITY SOMEWHERE ELSE!!!!!
-//        Entity entity = ecs.getWorld().getEntity(clientPlayerId);
-//
-//        System.out.println("entity: " + entity);
-//
-//        ServerIdComponent serverIdComponent = entity.getComponent(ServerIdComponent.class);
-//
-//        System.out.println("server id component: " + serverIdComponent);
-
-        // Making the player
-//        entityFactory = new EntityFactory(assetManager, ecs);
-//        clientPlayerId = entityFactory.makeEntity(350, 350, 25, 25, playerImg);
-//        PlayerData playerData = ecs.createComponent(ecs.getWorld().getEntity(clientPlayerId), ecs.getPlayerDataMapper());
-//        playerData.setChannel(channel);
     }
 
     @Override
     public void render(float delta) {
+
+        if (!gameScreenReady) {
+            gameScreenReady = true;
+        }
         GraphicsUtils.clearScreen();
 
         // render the map
@@ -171,7 +151,5 @@ public class GameScreen implements Screen {
         stage.dispose();
         map.dispose();
         mapRenderer.dispose();
-        assetManager.dispose();
-        batch.dispose();
     }
 }

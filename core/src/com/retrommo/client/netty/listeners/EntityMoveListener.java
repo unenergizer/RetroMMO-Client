@@ -2,10 +2,8 @@ package com.retrommo.client.netty.listeners;
 
 import com.retrommo.client.RetroMMO;
 import com.retrommo.client.ecs.components.PositionComponent;
-import com.retrommo.client.ecs.components.ServerIdComponent;
 import com.retrommo.client.netty.ObjectListener;
 import com.retrommo.client.netty.ObjectType;
-import com.retrommo.client.screens.GameScreen;
 import com.retrommo.iocommon.wire.client.EntityMove;
 
 import lombok.AllArgsConstructor;
@@ -33,22 +31,22 @@ public class EntityMoveListener implements ObjectListener {
     @ObjectType(getType = EntityMove.class)
     public void onEntityMove(EntityMove entityMove) {
 
-        GameScreen gameScreen = retroMMO.getGameScreen();
+        int serverID = entityMove.getEntityId();
+        float x = entityMove.getX();
+        float y = entityMove.getY();
 
-        ServerIdComponent serverPlayerId = gameScreen.getEcs().getServerIdMapper().get(gameScreen.getClientPlayerId());
+        if (serverID == retroMMO.getEntityManager().getClientData().getServerID()) return;
 
-        // Is the player
-        if (entityMove.getEntityId() == serverPlayerId.getServerId()) {
+        int localID = retroMMO.getEntityManager().serverIDtoLocalID(serverID);
 
-            System.out.println("ecs: " + gameScreen.getEcs());
-            System.out.println("position mapper: " + gameScreen.getEcs().getPositionMapper());
-            System.out.println("client serverId: " + gameScreen.getClientPlayerId());
+//        System.out.println("Moving entity...");
+//        System.out.println("ServerID: " + serverID);
+//        System.out.println("LocalID: " + localID);
+//        System.out.println("x: " + x);
+//        System.out.println("y: " + y);
 
-            PositionComponent position = gameScreen.getEcs().getPositionMapper().get(gameScreen.getClientPlayerId());
-            position.setX(entityMove.getX());
-            position.setY(entityMove.getY());
-        } else {
-            // not the player
-        }
+        PositionComponent position = retroMMO.getGameScreen().getEcs().getPositionMapper().get(localID);
+        position.setX(x);
+        position.setY(y);
     }
 }

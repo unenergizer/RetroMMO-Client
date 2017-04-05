@@ -1,5 +1,6 @@
 package com.retrommo.client.screens.input;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 
 /*********************************************************************************
@@ -18,24 +19,97 @@ import com.badlogic.gdx.InputProcessor;
  * without the prior written permission of the owner.
  */
 public class KeyboardInput implements InputProcessor {
+    //private final float moveSpeed = 105;
+    private final float moveSpeed = 1;
+    public boolean north, south, east, west, northWest, northEast, southWest, southEast;
 
-    // use this to dispatch events to the server
+    public float getYmovement() {
+        if (north || northWest || northEast) {
+            return moveSpeed;
+        } else if (south || southWest || southEast) {
+            return -moveSpeed;
+        } else {
+            return 0;
+        }
+    }
+
+    public float getXmovement() {
+        if (west || northWest || southWest) {
+            return -moveSpeed;
+        } else if (east || northEast || southEast) {
+            return moveSpeed;
+        } else {
+            return 0;
+        }
+    }
 
     @Override
     public boolean keyDown(int keycode) {
-        System.out.println("keyDown: " + keycode);
+
+        // get if diagonal movement
+        if (keycode == Input.Keys.W && keycode == Input.Keys.A) {
+            northWest = true;
+        } else if (keycode == Input.Keys.W && keycode == Input.Keys.D) {
+            northEast = true;
+        } else if (keycode == Input.Keys.S && keycode == Input.Keys.A) {
+            southWest = true;
+        } else if (keycode == Input.Keys.S && keycode == Input.Keys.D) {
+            southEast = true;
+        }
+
+        // if moving diagonally, then don't execute past the following line.
+        if (northWest || northEast || southWest || southEast) return false;
+
+        // calculate single direction movement
+        if (keycode == Input.Keys.W) {
+            north = true;
+        } else if (keycode == Input.Keys.S) {
+            south = true;
+        } else if (keycode == Input.Keys.D) {
+            east = true;
+        } else if (keycode == Input.Keys.A) {
+            west = true;
+        }
+        System.out.println("keydown");
+
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        System.out.println("keyUp: " + keycode);
+
+        // get if diagonal movement
+        if (keycode == Input.Keys.W && keycode == Input.Keys.A) {
+            northWest = false;
+        } else if (keycode == Input.Keys.W && keycode == Input.Keys.D) {
+            northEast = false;
+        } else if (keycode == Input.Keys.S && keycode == Input.Keys.A) {
+            southWest = false;
+        } else if (keycode == Input.Keys.S && keycode == Input.Keys.D) {
+            southEast = false;
+        }
+
+        // if moving diagonally, then don't execute past the following line.
+        if (northWest || northEast || southWest || southEast) return false;
+
+        // calculate single direction movement
+        if (keycode == Input.Keys.W) {
+            north = false;
+        } else if (keycode == Input.Keys.S) {
+            south = false;
+        } else if (keycode == Input.Keys.D) {
+            east = false;
+        } else if (keycode == Input.Keys.A) {
+            west = false;
+        }
+
+        System.out.println("keyup");
+
         return false;
     }
 
     @Override
     public boolean keyTyped(char character) {
-        System.out.println("keyTyped: " + character);
         return false;
     }
 

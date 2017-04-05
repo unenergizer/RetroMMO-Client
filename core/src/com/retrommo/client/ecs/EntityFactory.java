@@ -1,17 +1,15 @@
-package com.retrommo.client.ecs.systems;
+package com.retrommo.client.ecs;
 
 import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.assets.AssetManager;
-import com.retrommo.client.ecs.ECS;
+import com.retrommo.client.RetroMMO;
 import com.retrommo.client.ecs.components.PositionComponent;
 import com.retrommo.client.ecs.components.RotationComponent;
 import com.retrommo.client.ecs.components.ScaleComponent;
 import com.retrommo.client.ecs.components.ServerIdComponent;
 import com.retrommo.client.ecs.components.SizeComponent;
 import com.retrommo.client.ecs.components.TextureComponent;
-
-import lombok.AllArgsConstructor;
 
 /*********************************************************************************
  *
@@ -28,11 +26,17 @@ import lombok.AllArgsConstructor;
  * including photocopying, recording, or other electronic or mechanical methods, 
  * without the prior written permission of the owner.
  */
-@AllArgsConstructor
 public class EntityFactory {
 
+    private final RetroMMO retroMMO;
     private final AssetManager assetManager;
     private final ECS ecs;
+
+    public EntityFactory(RetroMMO retroMMO, ECS ecs) {
+        this.retroMMO = retroMMO;
+        assetManager = retroMMO.getAssetManager();
+        this.ecs = ecs;
+    }
 
     public int makeEntity(float x, float y, float width, float height, String imagePath, int serverEntityId) {
         return makeEntity(x, y, width, height, imagePath, 0f, 1, 1, serverEntityId);

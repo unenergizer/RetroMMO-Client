@@ -64,7 +64,6 @@ public class NetworkListenerManager {
             if (object.getClass().equals(it.getObjectType().getType())) {
                 packetFound = true;
                 try {
-                    System.out.println(object.getClass().getName());
                     it.getMethod().invoke(listeners.get(it), object);
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     e.printStackTrace();

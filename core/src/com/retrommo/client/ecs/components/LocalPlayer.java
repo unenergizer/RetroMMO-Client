@@ -2,7 +2,6 @@ package com.retrommo.client.ecs.components;
 
 import com.artemis.Component;
 
-import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +22,5 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class PlayerData extends Component {
-    private Channel channel;
+public class LocalPlayer extends Component {
 }
