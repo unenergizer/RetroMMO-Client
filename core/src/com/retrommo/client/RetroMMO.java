@@ -38,14 +38,7 @@ import lombok.Setter;
 @Setter
 public class RetroMMO extends Game {
 
-    // GENERAL
-    public static final String GAME_VERSION = "0.1.0";
-    public static final float WIDTH = 1080;
-    public static final float HEIGHT = WIDTH / 16 * 9;
-
     // NETWORKING
-    private final String serverAddress = "24.72.165.55";
-    private final int serverPort = 1337;
     private final NetworkListenerManager networkListenerManager;
     private boolean nettyStarted = false;
     private Channel channel;
@@ -133,7 +126,7 @@ public class RetroMMO extends Game {
         if (!nettyStarted) {
             nettyStarted = true;
             try {
-                new Thread(new NettySetup(this, serverAddress, serverPort)).start();
+                new Thread(new NettySetup(this, Constants.SERVER_ADDRESS, Constants.SERVER_PORT)).start();
             } catch (Exception e) {
                 e.printStackTrace();
             }

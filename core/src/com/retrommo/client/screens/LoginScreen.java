@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.retrommo.client.Constants;
 import com.retrommo.client.RetroMMO;
 import com.retrommo.client.assets.Assets;
 import com.retrommo.client.util.GraphicsUtils;
@@ -75,7 +76,7 @@ public class LoginScreen extends ScreenAdapter {
         Skin skin = new Skin(Gdx.files.internal(Assets.userInterface.UI_SKIN));
 
         // create widgets
-        Label nameLabel = new Label("RetroMMO v" + RetroMMO.GAME_VERSION, skin);
+        Label nameLabel = new Label("RetroMMO v" + Constants.SCREEN_WIDTH, skin);
         Label accountLabel = new Label("Account", skin);
         Label passwordLabel = new Label("Password", skin);
 
@@ -168,7 +169,10 @@ public class LoginScreen extends ScreenAdapter {
      */
     private void attemptLogin() {
         Gdx.input.setOnscreenKeyboardVisible(false); // close the android keyboard
-        loginInfo = new LoginInfo(accountField.getText(), passwordField.getText());
+        loginInfo = new LoginInfo(
+                accountField.getText(),
+                passwordField.getText(),
+                Constants.GAME_VERSION);
 
         // Start our network connection.
         retroMMO.startNetty();

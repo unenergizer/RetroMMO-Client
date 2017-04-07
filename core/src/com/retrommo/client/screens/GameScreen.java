@@ -12,6 +12,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.retrommo.client.Constants;
 import com.retrommo.client.RetroMMO;
 import com.retrommo.client.assets.Assets;
 import com.retrommo.client.ecs.ECS;
@@ -69,7 +70,7 @@ public class GameScreen implements Screen {
 
         // Camera and UI
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, RetroMMO.WIDTH, RetroMMO.HEIGHT);
+        camera.setToOrtho(false, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
         camera.update();
         stage = new Stage(viewport = new ScreenViewport());
 
